@@ -4,6 +4,7 @@ use std::path::{Path, PathBuf};
 
 use clap::Parser;
 use eframe::egui::{self, Context, Ui, Window};
+use tokio::runtime::Runtime;
 
 pub const LOREM_IPSUM_LONG: &str = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
 
@@ -58,10 +59,28 @@ type Result<T> = std::result::Result<T, Error>;
 #[derive(Parser)]
 struct Args {}
 
+struct GitHub {
+    runtime: Runtime,
+
+}
+
+impl GitHub {
+    pub fn new(runtime: Runtime) -> Self {
+        Self { runtime }
+}
+
 fn main() {
     // Log to stdout (if you run with `RUST_LOG=debug`).
     tracing_subscriber::fmt::init();
 
+    let runtime = tokio::runtime::Builder::new_multi_thread()
+        .enable_all()
+        .build()
+        .unwrap();
+
+    let github = GitHub::new(runtime);
+
+    /* TODO GUI
     let args = Args::parse();
 
     let options = eframe::NativeOptions {
@@ -71,4 +90,5 @@ fn main() {
 
     let app = LogViewer::default();
     eframe::run_native("Log Viewer", options, Box::new(|_cc| Box::new(app)));
+    */
 }
