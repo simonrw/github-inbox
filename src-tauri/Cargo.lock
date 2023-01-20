@@ -2720,6 +2720,9 @@ dependencies = [
  "serde_json",
  "tauri",
  "tauri-build",
+ "thiserror",
+ "tracing",
+ "tracing-subscriber",
 ]
 
 [[package]]
