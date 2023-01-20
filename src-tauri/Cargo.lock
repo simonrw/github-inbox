@@ -877,6 +877,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "github-inbox"
+version = "0.0.0"
+dependencies = [
+ "reqwest",
+ "serde",
+ "serde_json",
+ "tauri",
+ "tauri-build",
+ "thiserror",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
 name = "glib"
 version = "0.15.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2709,20 +2723,6 @@ dependencies = [
  "webkit2gtk",
  "webview2-com",
  "windows",
-]
-
-[[package]]
-name = "tauri-app"
-version = "0.0.0"
-dependencies = [
- "reqwest",
- "serde",
- "serde_json",
- "tauri",
- "tauri-build",
- "thiserror",
- "tracing",
- "tracing-subscriber",
 ]
 
 [[package]]

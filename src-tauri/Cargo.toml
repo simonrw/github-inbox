@@ -1,10 +1,10 @@
 [package]
-name = "tauri-app"
+name = "github-inbox"
 version = "0.0.0"
-description = "A Tauri App"
-authors = ["you"]
-license = ""
-repository = ""
+description = "Your personal todo list for GitHub"
+authors = ["Simon Walker <s.r.walker101@gmail.com>"]
+license = "Apache-2.0"
+repository = "https://github.com/simonrw/github-inbox"
 edition = "2021"
 rust-version = "1.57"
 

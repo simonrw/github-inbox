@@ -7,7 +7,7 @@
         "withGlobalTauri": false
     },
     "package": {
-        "productName": "tauri-app",
+        "productName": "github-inbox",
         "version": "0.0.0"
     },
     "tauri": {
@@ -62,7 +62,7 @@
                 "fullscreen": false,
                 "height": 600,
                 "resizable": true,
-                "title": "tauri-app",
+                "title": "github-inbox",
                 "width": 800
             }
         ]
