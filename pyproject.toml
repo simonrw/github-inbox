@@ -5,4 +5,4 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "github-inbox"
 version = "0.1.0"
-dependencies = ["flask"]
+dependencies = ["flask", "requests"]
