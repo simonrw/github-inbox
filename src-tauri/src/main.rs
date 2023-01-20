@@ -30,7 +30,7 @@ impl GitHub {
         headers.insert("Authorization", auth_value);
         headers.insert("User-Agent", HeaderValue::from_static("github-inbox/0.1.0"));
 
-        let mut client = reqwest::Client::builder()
+        let client = reqwest::Client::builder()
             .default_headers(headers)
             .build()
             .unwrap();
