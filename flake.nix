@@ -6,7 +6,10 @@
   outputs = { self, nixpkgs, flake-utils }:
     flake-utils.lib.eachDefaultSystem (system:
       let
-        pkgs = nixpkgs.legacyPackages.${system};
+        pkgs = import nixpkgs {
+          inherit system;
+          config.allowUnfree = true;
+        };
 
         linuxNativeBuildInputs = with pkgs; with xorg; [
           pkg-config
@@ -16,6 +19,7 @@
           rustc
           rustfmt
           clippy
+          cmake
         ];
 
         linuxBuildInputs = with pkgs; with xorg; [
@@ -43,7 +47,7 @@
       in
       with pkgs; {
         devShells.default = pkgs.mkShell {
-          nativeBuildInputs = if pkgs.stdenv.isDarwin then darwinNativeBuildInputs else linuxNativeBuildInputs;
+          nativeBuildInputs = [ pkgs.vscode.fhs ] ++ (if pkgs.stdenv.isDarwin then darwinNativeBuildInputs else linuxNativeBuildInputs);
 
           buildInputs = if pkgs.stdenv.isDarwin then darwinBuildInputs else linuxBuildInputs;
 

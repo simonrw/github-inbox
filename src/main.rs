@@ -61,12 +61,18 @@ struct Args {}
 
 struct GitHub {
     runtime: Runtime,
-
+    client: octocrab::Octocrab,
 }
 
 impl GitHub {
     pub fn new(runtime: Runtime) -> Self {
-        Self { runtime }
+        let client = octocrab::OctocrabBuilder::new().build();
+        Self { runtime, client }
+    }
+
+    fn fetch_assigned_issues(&self) -> _ {
+        todo!()
+    }
 }
 
 fn main() {
@@ -79,6 +85,7 @@ fn main() {
         .unwrap();
 
     let github = GitHub::new(runtime);
+    let assigned_issues = github.fetch_assigned_issues().unwrap();
 
     /* TODO GUI
     let args = Args::parse();
