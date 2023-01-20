@@ -5,12 +5,32 @@ use std::path::{Path, PathBuf};
 use clap::Parser;
 use eframe::egui::{self, Context, Ui, Window};
 
+pub const LOREM_IPSUM_LONG: &str = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
+
 struct LogViewer {}
+
+fn lorem_ipsum(ui: &mut egui::Ui) {
+    ui.with_layout(
+        egui::Layout::top_down(egui::Align::LEFT).with_cross_justify(true),
+        |ui| {
+            ui.label(egui::RichText::new(crate::LOREM_IPSUM_LONG));
+        },
+    );
+}
 
 impl eframe::App for LogViewer {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         egui::CentralPanel::default().show(ctx, |ui| {
-            ui.heading("LocalStack Log Viewer");
+            egui::SidePanel::left("assigned_issues").show_inside(ui, |ui| {
+                egui::ScrollArea::vertical().show(ui, |ui| {
+                    lorem_ipsum(ui);
+                });
+            });
+            egui::SidePanel::left("assigned_prs").show_inside(ui, |ui| {
+                egui::ScrollArea::vertical().show(ui, |ui| {
+                    lorem_ipsum(ui);
+                });
+            });
 
             // ui.horizontal(|ui| {
             //     let name_label = ui.label("Your name: ");
