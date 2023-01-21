@@ -3,8 +3,8 @@
     windows_subsystem = "windows"
 )]
 
-use serde::{Serialize, Deserialize};
 use reqwest::header::{HeaderMap, HeaderValue};
+use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
 #[derive(Error, Debug, Serialize)]
@@ -40,15 +40,26 @@ impl GitHub {
 
     pub async fn fetch_assigned_issues(&self, organisation: &str) -> Result<Vec<Issue>> {
         let url = format!("https://api.github.com/orgs/{organisation}/issues");
-        let res = self.client.get(url).send().await.map_err(|_| MyError::HttpError)?;
+        let res = self
+            .client
+            .get(url)
+            .send()
+            .await
+            .map_err(|_| MyError::HttpError)?;
 
-        let res = res
-            .error_for_status().map_err(|e| {
-                eprintln!("got bad status: {e:?}");
-                MyError::BadResponse(e.status().unwrap().as_u16())
-            })?;
+        let res = res.error_for_status().map_err(|e| {
+            eprintln!("got bad status: {e:?}");
+            MyError::BadResponse(e.status().unwrap().as_u16())
+        })?;
 
-        let issues: Vec<Issue> = res.json().await.expect("decoding result");
+        let issues: Vec<Issue> = {
+            let all_entries: Vec<Issue> = res.json().await.expect("decoding result");
+            // entries contains some PRs, so exclude those
+            all_entries
+                .into_iter()
+                .filter(|e| e.pull_request.is_none())
+                .collect()
+        };
         Ok(issues)
     }
 }
@@ -58,10 +69,14 @@ struct Issue {
     title: String,
     number: u64,
     html_url: String,
+    pull_request: Option<serde_json::Value>,
 }
 
 #[tauri::command]
-async fn fetch_assigned_issues(gh: tauri::State<'_, GitHub>, organisation: String) -> Result<Vec<Issue>> {
+async fn fetch_assigned_issues(
+    gh: tauri::State<'_, GitHub>,
+    organisation: String,
+) -> Result<Vec<Issue>> {
     gh.fetch_assigned_issues(&organisation).await
 }
 

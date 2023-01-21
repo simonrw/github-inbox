@@ -35,6 +35,7 @@
           # TODO: temporary workaround
           # https://github.com/NixOS/nixpkgs/issues/32580#issuecomment-350877197
           WEBKIT_DISABLE_COMPOSITING_MODE = 1;
+          RUST_SRC_PATH = "${pkgs.rustPlatform.rustLibSrc}";
         };
         packages.default = pkgs.callPackage ./default.nix { };
       }

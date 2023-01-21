@@ -1,6 +1,7 @@
 <script lang="ts">
     import { onMount } from "svelte";
     import { invoke } from "@tauri-apps/api/tauri";
+    import Item from "./Item.svelte";
 
     export let title: string;
     export let organisation: string;
@@ -16,10 +17,9 @@
     <h2>{title}</h2>
     <ul>
         {#each data as item}
+
             <li>
-                <a href={item.html_url} target="_blank" rel="noreferrer"
-                    >{item.title}</a
-                >
+                <Item raw={item} />
             </li>
         {/each}
     </ul>
