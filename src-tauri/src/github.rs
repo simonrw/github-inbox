@@ -1,6 +1,6 @@
 // TODO: can we unify the queries and just use the search interface?
 use reqwest::{IntoUrl, Response};
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize, Deserializer};
 
 use crate::errors::{MyError, Result};
 
@@ -126,6 +126,26 @@ pub(crate) struct Issue {
     pub(crate) html_url: String,
     pub(crate) pull_request: Option<serde_json::Value>,
     pub(crate) draft: Option<bool>,
+    #[serde(rename(deserialize = "repository_url"), deserialize_with = "deserialize_repo")]
+    pub(crate) repo: Repo,
+}
+
+#[derive(Deserialize, Serialize)]
+pub(crate) struct Repo {
+    owner: String,
+    name: String,
+}
+
+fn deserialize_repo<'de, D>(deserializer: D) -> std::result::Result<Repo, D::Error>
+where D: Deserializer<'de> {
+    let s: &str = Deserialize::deserialize(deserializer)?;
+    let mut parts = s.split('/').rev();
+    let name = parts.next().unwrap();
+    let owner = parts.next().unwrap();
+
+    Ok(Repo {
+        owner: owner.to_string(), name: name.to_string()
+    })
 }
 
 // #[cfg(test)]
