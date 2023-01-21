@@ -15,8 +15,8 @@
     });
 </script>
 
-<div class="w-[200px]">
-    <h2 class="text-zinc-300 mx-auto text-center">{queryArgs.title}</h2>
+<div>
+    <h2>{queryArgs.title}</h2>
     <ul>
         {#each data as item}
             <li>
@@ -27,7 +27,17 @@
 </div>
 
 <style>
+    div {
+        min-width: 250px;
+    }
+
     h2 {
         font-family: "Noto Sans";
+        color: #d4d4d8;
+        margin-left: auto;
+        margin-right: auto;
+        text-align: center;
+        font-size: 1.125rem;
+        line-height: 1.75rem;
     }
 </style>

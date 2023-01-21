@@ -13,10 +13,22 @@
     ];
 </script>
 
-<main
-    class="container font-semibold mx-auto p-8 flex h-screen justify-between overflow-scroll"
->
+<main>
     {#each roles as role}
         <Panel {organisation} {role} />
     {/each}
 </main>
+
+<style>
+    main {
+        width: 100%;
+        display: flex;
+        overflow: scroll;
+        padding: 2rem;
+        margin-left: auto;
+        margin-right: auto;
+        font-weight: 600;
+        justify-content: space-between;
+        height: 100vh;
+    }
+</style>
