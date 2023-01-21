@@ -62,6 +62,32 @@ impl GitHub {
         };
         Ok(issues)
     }
+
+    pub async fn fetch_created_issues(&self, organisation: &str) -> Result<Vec<Issue>> {
+        let url = format!("https://api.github.com/orgs/{organisation}/issues");
+        let res = self
+            .client
+            .get(url)
+            .query(&[("filter", "created")])
+            .send()
+            .await
+            .map_err(|_| MyError::HttpError)?;
+
+        let res = res.error_for_status().map_err(|e| {
+            eprintln!("got bad status: {e:?}");
+            MyError::BadResponse(e.status().unwrap().as_u16())
+        })?;
+
+        let issues: Vec<Issue> = {
+            let all_entries: Vec<Issue> = res.json().await.expect("decoding result");
+            // entries contains some PRs, so exclude those
+            all_entries
+                .into_iter()
+                .filter(|e| e.pull_request.is_none())
+                .collect()
+        };
+        Ok(issues)
+    }
 }
 
 #[derive(Deserialize, Serialize)]
@@ -80,13 +106,24 @@ async fn fetch_assigned_issues(
     gh.fetch_assigned_issues(&organisation).await
 }
 
+#[tauri::command]
+async fn fetch_created_issues(
+    gh: tauri::State<'_, GitHub>,
+    organisation: String,
+) -> Result<Vec<Issue>> {
+    gh.fetch_created_issues(&organisation).await
+}
+
 fn main() {
     tracing_subscriber::fmt::init();
     let token = std::env::var("GITHUB_TOKEN").unwrap();
     let gh = GitHub::new(&token);
     tauri::Builder::default()
         .manage(gh)
-        .invoke_handler(tauri::generate_handler![fetch_assigned_issues])
+        .invoke_handler(tauri::generate_handler![
+            fetch_assigned_issues,
+            fetch_created_issues
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

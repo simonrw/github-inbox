@@ -8,12 +8,12 @@
     let data = [];
 
     onMount(async () => {
-        data = await invoke("fetch_assigned_issues", { organisation });
+        data = await invoke("fetch_created_issues", { organisation });
     });
 </script>
 
 <div class="w-[200px]">
-    <h2>Assigned Issues</h2>
+    <h2>Created issues</h2>
     <ul>
         {#each data as item}
             <li>
