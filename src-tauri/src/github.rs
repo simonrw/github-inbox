@@ -236,6 +236,7 @@ pub(crate) struct Issue {
     pub(crate) number: u64,
     pub(crate) html_url: String,
     pub(crate) pull_request: Option<serde_json::Value>,
+    pub(crate) draft: Option<bool>,
 }
 
 // #[cfg(test)]
