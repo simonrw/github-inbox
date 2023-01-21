@@ -16,7 +16,7 @@
 </script>
 
 <div class="w-[200px]">
-    <h2 class="mx-auto text-center">{queryArgs.title}</h2>
+    <h2 class="text-zinc-300 mx-auto text-center">{queryArgs.title}</h2>
     <ul>
         {#each data as item}
             <li>
@@ -25,3 +25,9 @@
         {/each}
     </ul>
 </div>
+
+<style>
+    h2 {
+        font-family: "Noto Sans";
+    }
+</style>

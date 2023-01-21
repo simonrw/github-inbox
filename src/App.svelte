@@ -14,7 +14,7 @@
 </script>
 
 <main
-    class="container mx-auto p-8 flex h-screen justify-between overflow-scroll"
+    class="container font-semibold mx-auto p-8 flex h-screen justify-between overflow-scroll"
 >
     {#each roles as role}
         <Panel {organisation} {role} />
