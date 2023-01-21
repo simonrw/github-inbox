@@ -1,3 +1,4 @@
+// TODO: can we unify the queries and just use the search interface?
 use reqwest::{IntoUrl, Response};
 use serde::{Deserialize, Serialize};
 
@@ -112,13 +113,101 @@ where
         Ok(issues)
     }
 
-    pub(crate) async fn fetch_review_requests(&self, organisation: &str) -> Result<Vec<Issue>> {
+    pub(crate) async fn fetch_created_prs(&self, organisation: &str) -> Result<Vec<Issue>> {
         let url = format!("https://api.github.com/search/issues");
+        let query_args = format!("is:open is:pr author:simonrw archived:false user:{organisation} ");
         let res = self
             .client
             .get(
                 url,
-                Some(&[("q", "is:open is:pr review-requested:simonrw archived:false")]),
+                Some(&[("q", &query_args)]),
+            )
+            .await
+            .map_err(|_| MyError::HttpError)?;
+
+        let res = res.error_for_status().map_err(|e| {
+            eprintln!("got bad status: {e:?}");
+            MyError::BadResponse(e.status().unwrap().as_u16())
+        })?;
+
+        let issues: Vec<Issue> = {
+            #[derive(Deserialize)]
+            struct TempResponse {
+                items: Vec<Issue>,
+            }
+
+            let response: TempResponse = res.json().await.expect("decoding result");
+            response.items
+        };
+        Ok(issues)
+    }
+
+    pub(crate) async fn fetch_assigned_prs(&self, organisation: &str) -> Result<Vec<Issue>> {
+        let url = format!("https://api.github.com/search/issues");
+        let query_args = format!("is:open is:pr archived:false user:{organisation} assignee:simonrw ");
+        let res = self
+            .client
+            .get(
+                url,
+                Some(&[("q", &query_args)]),
+            )
+            .await
+            .map_err(|_| MyError::HttpError)?;
+
+        let res = res.error_for_status().map_err(|e| {
+            eprintln!("got bad status: {e:?}");
+            MyError::BadResponse(e.status().unwrap().as_u16())
+        })?;
+
+        let issues: Vec<Issue> = {
+            #[derive(Deserialize)]
+            struct TempResponse {
+                items: Vec<Issue>,
+            }
+
+            let response: TempResponse = res.json().await.expect("decoding result");
+            response.items
+        };
+        Ok(issues)
+    }
+
+    pub(crate) async fn fetch_mentioned_prs(&self, organisation: &str) -> Result<Vec<Issue>> {
+        let url = format!("https://api.github.com/search/issues");
+        let query_args = format!("is:open is:pr archived:false user:{organisation} mentions:simonrw ");
+        let res = self
+            .client
+            .get(
+                url,
+                Some(&[("q", &query_args)]),
+            )
+            .await
+            .map_err(|_| MyError::HttpError)?;
+
+        let res = res.error_for_status().map_err(|e| {
+            eprintln!("got bad status: {e:?}");
+            MyError::BadResponse(e.status().unwrap().as_u16())
+        })?;
+
+        let issues: Vec<Issue> = {
+            #[derive(Deserialize)]
+            struct TempResponse {
+                items: Vec<Issue>,
+            }
+
+            let response: TempResponse = res.json().await.expect("decoding result");
+            response.items
+        };
+        Ok(issues)
+    }
+
+    pub(crate) async fn fetch_review_requests(&self, organisation: &str) -> Result<Vec<Issue>> {
+        let url = format!("https://api.github.com/search/issues");
+        let query_args = format!("is:open is:pr review-requested:simonrw archived:false org:{organisation}");
+        let res = self
+            .client
+            .get(
+                url,
+                Some(&[("q", &query_args)]),
             )
             .await
             .map_err(|_| MyError::HttpError)?;
