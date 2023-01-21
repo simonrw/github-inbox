@@ -880,6 +880,7 @@ dependencies = [
 name = "github-inbox"
 version = "0.0.0"
 dependencies = [
+ "async-trait",
  "reqwest",
  "serde",
  "serde_json",

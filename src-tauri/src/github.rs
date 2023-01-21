@@ -1,34 +1,50 @@
-use reqwest::header::{HeaderMap, HeaderValue};
+use reqwest::{IntoUrl, Response};
 use serde::{Deserialize, Serialize};
 
 use crate::errors::{MyError, Result};
 
-pub(crate) struct GitHub {
-    client: reqwest::Client,
+#[async_trait::async_trait]
+pub(crate) trait HttpClient {
+    async fn get<U, T>(&self, url: U, params: Option<&T>) -> Result<Response>
+    where
+        U: IntoUrl + Send,
+        T: Serialize + Sync + ?Sized;
 }
 
-impl GitHub {
-    pub(crate) fn new(token: &str) -> Self {
-        let mut headers = HeaderMap::new();
-        let mut auth_value = HeaderValue::from_str(&format!("Bearer {token}")).unwrap();
-        auth_value.set_sensitive(true);
-        headers.insert("Authorization", auth_value);
-        headers.insert("User-Agent", HeaderValue::from_static("github-inbox/0.1.0"));
+#[async_trait::async_trait]
+impl HttpClient for reqwest::Client {
+    async fn get<U, T>(&self, url: U, params: Option<&T>) -> Result<Response>
+    where
+        U: IntoUrl + Send,
+        T: Serialize + Sync + ?Sized,
+    {
+        let mut req = self.get(url);
+        if let Some(p) = params {
+            req = req.query(p);
+        }
+        req.send().await.map_err(|_| MyError::HttpError)
+    }
+}
 
-        let client = reqwest::Client::builder()
-            .default_headers(headers)
-            .build()
-            .unwrap();
+pub(crate) struct GitHub<H> {
+    client: H,
+}
 
-        Self { client }
+impl<H> GitHub<H>
+where
+    H: HttpClient,
+{
+    pub(crate) fn new(http_client: H) -> Self {
+        Self {
+            client: http_client,
+        }
     }
 
     pub(crate) async fn fetch_assigned_issues(&self, organisation: &str) -> Result<Vec<Issue>> {
         let url = format!("https://api.github.com/orgs/{organisation}/issues");
         let res = self
             .client
-            .get(url)
-            .send()
+            .get::<String, &[&str]>(url, None)
             .await
             .map_err(|_| MyError::HttpError)?;
 
@@ -52,9 +68,61 @@ impl GitHub {
         let url = format!("https://api.github.com/orgs/{organisation}/issues");
         let res = self
             .client
-            .get(url)
-            .query(&[("filter", "created")])
-            .send()
+            .get(url, Some(&[("filter", "created")]))
+            .await
+            .map_err(|_| MyError::HttpError)?;
+
+        let res = res.error_for_status().map_err(|e| {
+            eprintln!("got bad status: {e:?}");
+            MyError::BadResponse(e.status().unwrap().as_u16())
+        })?;
+
+        let issues: Vec<Issue> = {
+            let all_entries: Vec<Issue> = res.json().await.expect("decoding result");
+            // entries contains some PRs, so exclude those
+            all_entries
+                .into_iter()
+                .filter(|e| e.pull_request.is_none())
+                .collect()
+        };
+        Ok(issues)
+    }
+
+    pub(crate) async fn fetch_mentioned_issues(&self, organisation: &str) -> Result<Vec<Issue>> {
+        let url = format!("https://api.github.com/orgs/{organisation}/issues");
+        let res = self
+            .client
+            .get(url, Some(&[("filter", "mentioned")]))
+            .await
+            .map_err(|_| MyError::HttpError)?;
+
+        let res = res.error_for_status().map_err(|e| {
+            eprintln!("got bad status: {e:?}");
+            MyError::BadResponse(e.status().unwrap().as_u16())
+        })?;
+
+        let issues: Vec<Issue> = {
+            let all_entries: Vec<Issue> = res.json().await.expect("decoding result");
+            // entries contains some PRs, so exclude those
+            all_entries
+                .into_iter()
+                .filter(|e| e.pull_request.is_none())
+                .collect()
+        };
+        Ok(issues)
+    }
+
+    pub(crate) async fn fetch_review_requests(&self, organisation: &str) -> Result<Vec<Issue>> {
+        let url = format!("https://api.github.com/orgs/{organisation}/issues");
+        let res = self
+            .client
+            .get(
+                url,
+                Some(&[(
+                    "q",
+                    "is:open is:pr review-requested:simonrw archived:false ",
+                )]),
+            )
             .await
             .map_err(|_| MyError::HttpError)?;
 
@@ -82,3 +150,24 @@ pub(crate) struct Issue {
     pub(crate) html_url: String,
     pub(crate) pull_request: Option<serde_json::Value>,
 }
+
+// #[cfg(test)]
+// mod tests {
+//     use super::*;
+
+//     struct MockClient {}
+
+//     #[async_trait::async_trait]
+//     impl HttpClient for MockClient {
+//         async fn get<U, T>(&self, url: U, params: Option<&T>) -> Result<Response>
+//         where
+//             U: IntoUrl + Send,
+//             T: Serialize + Sync + ?Sized,
+//         {
+//             todo!()
+//         }
+//     }
+
+//     #[tokio::test]
+//     async fn fetching_created_issues() {}
+// }
