@@ -29,6 +29,7 @@
           nativeBuildInputs = [
             pkgs.pkg-config
             pkgs.yarn
+            pkgs.nodePackages.prettier
           ];
           buildInputs = build-inputs;
 
