@@ -5,16 +5,32 @@
 
   outputs = { self, nixpkgs, flake-utils }:
     flake-utils.lib.eachDefaultSystem (system:
-      let pkgs = nixpkgs.legacyPackages.${system}; in
+      let
+        pkgs = nixpkgs.legacyPackages.${system};
+
+        linux-build-inputs = [
+          pkgs.webkitgtk
+        ];
+
+        macos-build-inputs = [
+          pkgs.libiconv
+        ] ++ (with pkgs.darwin.apple_sdk.frameworks;
+          [
+            Carbon
+            WebKit
+            AppKit
+          ]);
+
+        build-inputs =
+          if pkgs.stdenv.isDarwin then macos-build-inputs else linux-build-inputs;
+      in
       {
         devShells.default = pkgs.mkShell {
           nativeBuildInputs = [
             pkgs.pkg-config
-            pkgs.webkitgtk
             pkgs.yarn
           ];
-          buildInputs = [
-          ];
+          buildInputs = build-inputs;
 
           # TODO: temporary workaround
           # https://github.com/NixOS/nixpkgs/issues/32580#issuecomment-350877197
