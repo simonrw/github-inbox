@@ -3,7 +3,6 @@
     import { invoke } from "@tauri-apps/api/tauri";
     import Item from "./Item.svelte";
 
-    export let title: string;
     export let organisation: string;
 
     let data = [];
@@ -14,10 +13,9 @@
 </script>
 
 <div>
-    <h2>{title}</h2>
+    <h2>Assigned Issues</h2>
     <ul>
         {#each data as item}
-
             <li>
                 <Item raw={item} />
             </li>
