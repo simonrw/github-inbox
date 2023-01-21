@@ -23,4 +23,3 @@
     </div>
     <p>{greetMsg}</p>
 </div>
-

@@ -38,8 +38,8 @@ impl GitHub {
         Self { client }
     }
 
-    pub async fn fetch_assigned_issues(&self) -> Result<Vec<Issue>> {
-        let url = format!("https://api.github.com/issues");
+    pub async fn fetch_assigned_issues(&self, organisation: &str) -> Result<Vec<Issue>> {
+        let url = format!("https://api.github.com/orgs/{organisation}/issues");
         let res = self.client.get(url).send().await.map_err(|_| MyError::HttpError)?;
 
         let res = res
@@ -55,11 +55,14 @@ impl GitHub {
 
 #[derive(Deserialize, Serialize)]
 struct Issue {
+    title: String,
+    number: u64,
+    html_url: String,
 }
 
 #[tauri::command]
-async fn fetch_assigned_issues(gh: tauri::State<'_, GitHub>) -> Result<Vec<Issue>> {
-    gh.fetch_assigned_issues().await
+async fn fetch_assigned_issues(gh: tauri::State<'_, GitHub>, organisation: String) -> Result<Vec<Issue>> {
+    gh.fetch_assigned_issues(&organisation).await
 }
 
 fn main() {
