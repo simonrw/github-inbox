@@ -7,7 +7,7 @@
     export let role: string;
     export let organisation: string;
 
-    let data = [];
+    let data = undefined;
     const queryArgs = queryMapping(role);
 
     onMount(async () => {
@@ -18,17 +18,25 @@
 <div>
     <h2>{queryArgs.title}</h2>
     <ul>
-        {#each data as item}
-            <li>
-                <Item raw={item} />
-            </li>
-        {/each}
+        {#if data}
+            {#each data as item}
+                <li>
+                    <Item raw={item} />
+                </li>
+            {/each}
+        {:else}
+            <li>Loading...</li>
+        {/if}
     </ul>
 </div>
 
 <style>
     div {
         min-width: 250px;
+    }
+
+    li {
+        color: #fff;
     }
 
     h2 {
