@@ -41,6 +41,27 @@ where
         }
     }
 
+    pub(crate) async fn fetch_orgs(&self) -> Result<Vec<String>> {
+        #[derive(Deserialize)]
+        struct Org {
+            #[serde(rename = "login")]
+            name: String,
+        }
+
+        let url = "https://api.github.com/user/orgs";
+        let res = self.client.get::<&str, &[&str]>(url, None)
+            .await
+            .map_err(|_| MyError::HttpError)?;
+
+        let res = res.error_for_status().map_err(|e| {
+            eprintln!("got bad status: {e:?}");
+            MyError::BadResponse(e.status().unwrap().as_u16())
+        })?;
+
+        let orgs: Vec<Org> = res.json().await.expect("decoding result");
+        Ok(orgs.into_iter().map(|o| o.name).collect())
+    }
+
     pub(crate) async fn fetch_assigned_issues(&self, organisation: &str) -> Result<Vec<Issue>> {
         let url = format!("https://api.github.com/orgs/{organisation}/issues");
         let res = self

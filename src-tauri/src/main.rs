@@ -12,6 +12,13 @@ use crate::errors::Result;
 use crate::github::{GitHub, Issue};
 
 #[tauri::command]
+async fn fetch_orgs(
+    gh: tauri::State<'_, GitHub<reqwest::Client>>,
+) -> Result<Vec<String>> {
+    gh.fetch_orgs().await
+}
+
+#[tauri::command]
 async fn fetch_assigned_issues(
     gh: tauri::State<'_, GitHub<reqwest::Client>>,
     organisation: String,
@@ -85,6 +92,7 @@ fn main() {
     tauri::Builder::default()
         .manage(gh)
         .invoke_handler(tauri::generate_handler![
+            fetch_orgs,
             fetch_created_issues,
             fetch_assigned_issues,
             fetch_mentioned_issues,
