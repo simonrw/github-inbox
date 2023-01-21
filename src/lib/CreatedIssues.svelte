@@ -12,8 +12,8 @@
     });
 </script>
 
-<div class="w-[200px]">
-    <h2>Created issues</h2>
+<div class="border w-[200px]">
+    <h2 class="mx-auto text-center">Created issues</h2>
     <ul>
         {#each data as item}
             <li>

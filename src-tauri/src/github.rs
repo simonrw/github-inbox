@@ -113,15 +113,12 @@ where
     }
 
     pub(crate) async fn fetch_review_requests(&self, organisation: &str) -> Result<Vec<Issue>> {
-        let url = format!("https://api.github.com/orgs/{organisation}/issues");
+        let url = format!("https://api.github.com/search/issues");
         let res = self
             .client
             .get(
                 url,
-                Some(&[(
-                    "q",
-                    "is:open is:pr review-requested:simonrw archived:false ",
-                )]),
+                Some(&[("q", "is:open is:pr review-requested:simonrw archived:false")]),
             )
             .await
             .map_err(|_| MyError::HttpError)?;
@@ -132,12 +129,13 @@ where
         })?;
 
         let issues: Vec<Issue> = {
-            let all_entries: Vec<Issue> = res.json().await.expect("decoding result");
-            // entries contains some PRs, so exclude those
-            all_entries
-                .into_iter()
-                .filter(|e| e.pull_request.is_none())
-                .collect()
+            #[derive(Deserialize)]
+            struct TempResponse {
+                items: Vec<Issue>,
+            }
+
+            let response: TempResponse = res.json().await.expect("decoding result");
+            response.items
         };
         Ok(issues)
     }

@@ -13,7 +13,7 @@
 </script>
 
 <div class="w-[200px]">
-    <h2>Mentioned issues</h2>
+    <h2 class="mx-auto text-center">Mentioned issues</h2>
     <ul>
         {#each data as item}
             <li>
