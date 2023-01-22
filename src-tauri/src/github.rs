@@ -1,6 +1,6 @@
 // TODO: can we unify the queries and just use the search interface?
 use reqwest::{IntoUrl, Response};
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize, Deserializer};
 
 use crate::errors::{MyError, Result};
 
@@ -41,11 +41,15 @@ where
         }
     }
 
-    pub(crate) async fn fetch_assigned_issues(&self, organisation: &str) -> Result<Vec<Issue>> {
-        let url = format!("https://api.github.com/orgs/{organisation}/issues");
-        let res = self
-            .client
-            .get::<String, &[&str]>(url, None)
+    pub(crate) async fn fetch_orgs(&self) -> Result<Vec<String>> {
+        #[derive(Deserialize)]
+        struct Org {
+            #[serde(rename = "login")]
+            name: String,
+        }
+
+        let url = "https://api.github.com/user/orgs";
+        let res = self.client.get::<&str, &[&str]>(url, None)
             .await
             .map_err(|_| MyError::HttpError)?;
 
@@ -54,160 +58,45 @@ where
             MyError::BadResponse(e.status().unwrap().as_u16())
         })?;
 
-        let issues: Vec<Issue> = {
-            let all_entries: Vec<Issue> = res.json().await.expect("decoding result");
-            // entries contains some PRs, so exclude those
-            all_entries
-                .into_iter()
-                .filter(|e| e.pull_request.is_none())
-                .collect()
-        };
-        Ok(issues)
+        let orgs: Vec<Org> = res.json().await.expect("decoding result");
+        Ok(orgs.into_iter().map(|o| o.name).collect())
+    }
+
+    pub(crate) async fn fetch_assigned_issues(&self, organisation: &str) -> Result<Vec<Issue>> {
+        self.search(format!("is:open is:issue archived:false user:{organisation} assignee:simonrw")).await
     }
 
     pub(crate) async fn fetch_created_issues(&self, organisation: &str) -> Result<Vec<Issue>> {
-        let url = format!("https://api.github.com/orgs/{organisation}/issues");
-        let res = self
-            .client
-            .get(url, Some(&[("filter", "created")]))
-            .await
-            .map_err(|_| MyError::HttpError)?;
-
-        let res = res.error_for_status().map_err(|e| {
-            eprintln!("got bad status: {e:?}");
-            MyError::BadResponse(e.status().unwrap().as_u16())
-        })?;
-
-        let issues: Vec<Issue> = {
-            let all_entries: Vec<Issue> = res.json().await.expect("decoding result");
-            // entries contains some PRs, so exclude those
-            all_entries
-                .into_iter()
-                .filter(|e| e.pull_request.is_none())
-                .collect()
-        };
-        Ok(issues)
+        self.search(format!("is:open is:issue author:simonrw archived:false user:{organisation}")).await
     }
 
     pub(crate) async fn fetch_mentioned_issues(&self, organisation: &str) -> Result<Vec<Issue>> {
-        let url = format!("https://api.github.com/orgs/{organisation}/issues");
-        let res = self
-            .client
-            .get(url, Some(&[("filter", "mentioned")]))
-            .await
-            .map_err(|_| MyError::HttpError)?;
-
-        let res = res.error_for_status().map_err(|e| {
-            eprintln!("got bad status: {e:?}");
-            MyError::BadResponse(e.status().unwrap().as_u16())
-        })?;
-
-        let issues: Vec<Issue> = {
-            let all_entries: Vec<Issue> = res.json().await.expect("decoding result");
-            // entries contains some PRs, so exclude those
-            all_entries
-                .into_iter()
-                .filter(|e| e.pull_request.is_none())
-                .collect()
-        };
-        Ok(issues)
+        self.search(format!("is:open is:issue archived:false user:{organisation} mentions:simonrw ")).await
     }
 
     pub(crate) async fn fetch_created_prs(&self, organisation: &str) -> Result<Vec<Issue>> {
-        let url = format!("https://api.github.com/search/issues");
-        let query_args = format!("is:open is:pr author:simonrw archived:false user:{organisation} ");
-        let res = self
-            .client
-            .get(
-                url,
-                Some(&[("q", &query_args)]),
-            )
-            .await
-            .map_err(|_| MyError::HttpError)?;
-
-        let res = res.error_for_status().map_err(|e| {
-            eprintln!("got bad status: {e:?}");
-            MyError::BadResponse(e.status().unwrap().as_u16())
-        })?;
-
-        let issues: Vec<Issue> = {
-            #[derive(Deserialize)]
-            struct TempResponse {
-                items: Vec<Issue>,
-            }
-
-            let response: TempResponse = res.json().await.expect("decoding result");
-            response.items
-        };
-        Ok(issues)
+        self.search(format!("is:open is:pr author:simonrw archived:false user:{organisation}")).await
     }
 
     pub(crate) async fn fetch_assigned_prs(&self, organisation: &str) -> Result<Vec<Issue>> {
-        let url = format!("https://api.github.com/search/issues");
-        let query_args = format!("is:open is:pr archived:false user:{organisation} assignee:simonrw ");
-        let res = self
-            .client
-            .get(
-                url,
-                Some(&[("q", &query_args)]),
-            )
-            .await
-            .map_err(|_| MyError::HttpError)?;
-
-        let res = res.error_for_status().map_err(|e| {
-            eprintln!("got bad status: {e:?}");
-            MyError::BadResponse(e.status().unwrap().as_u16())
-        })?;
-
-        let issues: Vec<Issue> = {
-            #[derive(Deserialize)]
-            struct TempResponse {
-                items: Vec<Issue>,
-            }
-
-            let response: TempResponse = res.json().await.expect("decoding result");
-            response.items
-        };
-        Ok(issues)
+        self.search(format!("is:open is:pr archived:false user:{organisation} assignee:simonrw")).await
     }
 
     pub(crate) async fn fetch_mentioned_prs(&self, organisation: &str) -> Result<Vec<Issue>> {
-        let url = format!("https://api.github.com/search/issues");
-        let query_args = format!("is:open is:pr archived:false user:{organisation} mentions:simonrw ");
-        let res = self
-            .client
-            .get(
-                url,
-                Some(&[("q", &query_args)]),
-            )
-            .await
-            .map_err(|_| MyError::HttpError)?;
-
-        let res = res.error_for_status().map_err(|e| {
-            eprintln!("got bad status: {e:?}");
-            MyError::BadResponse(e.status().unwrap().as_u16())
-        })?;
-
-        let issues: Vec<Issue> = {
-            #[derive(Deserialize)]
-            struct TempResponse {
-                items: Vec<Issue>,
-            }
-
-            let response: TempResponse = res.json().await.expect("decoding result");
-            response.items
-        };
-        Ok(issues)
+        self.search(format!("is:open is:pr archived:false user:{organisation} mentions:simonrw")).await
     }
 
     pub(crate) async fn fetch_review_requests(&self, organisation: &str) -> Result<Vec<Issue>> {
+        self.search(format!("is:open is:pr review-requested:simonrw archived:false org:{organisation}")).await
+    }
+
+    async fn search(&self, query_args: impl AsRef<str>) -> Result<Vec<Issue>> {
         let url = format!("https://api.github.com/search/issues");
-        let query_args = format!("is:open is:pr review-requested:simonrw archived:false org:{organisation}");
         let res = self
             .client
             .get(
                 url,
-                Some(&[("q", &query_args)]),
+                Some(&[("q", query_args.as_ref())]),
             )
             .await
             .map_err(|_| MyError::HttpError)?;
@@ -237,6 +126,26 @@ pub(crate) struct Issue {
     pub(crate) html_url: String,
     pub(crate) pull_request: Option<serde_json::Value>,
     pub(crate) draft: Option<bool>,
+    #[serde(rename(deserialize = "repository_url"), deserialize_with = "deserialize_repo")]
+    pub(crate) repo: Repo,
+}
+
+#[derive(Deserialize, Serialize)]
+pub(crate) struct Repo {
+    owner: String,
+    name: String,
+}
+
+fn deserialize_repo<'de, D>(deserializer: D) -> std::result::Result<Repo, D::Error>
+where D: Deserializer<'de> {
+    let s: &str = Deserialize::deserialize(deserializer)?;
+    let mut parts = s.split('/').rev();
+    let name = parts.next().unwrap();
+    let owner = parts.next().unwrap();
+
+    Ok(Repo {
+        owner: owner.to_string(), name: name.to_string()
+    })
 }
 
 // #[cfg(test)]

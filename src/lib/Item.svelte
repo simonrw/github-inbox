@@ -1,5 +1,6 @@
 <script lang="ts">
     export let raw;
+    console.log(raw);
 
     let logoColour: string;
     if (raw.draft) {
@@ -11,7 +12,12 @@
 </script>
 
 <div>
-    <a href={raw.html_url} target="_blank" rel="noreferrer">
+    <a
+        href={raw.html_url}
+        target="_blank"
+        rel="noreferrer"
+        class="flex justify-between"
+    >
         <span class="inline">
             {#if raw.pull_request}
                 <svg
@@ -47,6 +53,9 @@
                 </svg>
             {/if}
             {raw.title}
+        </span>
+        <span class="text-slate-600">
+            {raw.repo.owner}/{raw.repo.name}
         </span>
     </a>
 </div>
