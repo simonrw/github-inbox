@@ -1,27 +1,24 @@
-{ lib
-, rustPlatform
-, cmake
-, dbus
-, fetchYarnDeps
-, freetype
-, gtk3
-, yarn
-, libsoup
-, mkYarnPackage
-, openssl
-, pkg-config
-, webkitgtk
+let
+  node-overlay = self: super: {
+    nodejs = super.nodejs-16_x;
+  };
+in
+{ pkgs ? import <nixpkgs> {
+    overlays = [
+      node-overlay
+    ];
+  }
 }:
 let
   pname = "github-inbox";
   version = "unstable";
   src = ./.;
 
-  frontend-build = mkYarnPackage {
+  frontend-build = pkgs.mkYarnPackage {
     inherit version src;
     pname = "github-inbox-ui";
 
-    offlineCache = fetchYarnDeps {
+    offlineCache = pkgs.fetchYarnDeps {
       yarnLock = src + "/yarn.lock";
       hash = "sha256-PAMl4/TReurrvrg/xuBaBM1oqmmXiRCqCI7qtOJS7+8=";
     };
@@ -30,40 +27,46 @@ let
 
     buildPhase = ''
       export HOME=$(mktemp -d)
-      ${yarn}/bin/yarn --offline build
+      ${pkgs.yarn}/bin/yarn --offline build
       cp -r deps/github-inbox/dist $out
     '';
 
     distPhase = ":";
     dontInstall = true;
   };
+
+  linux-build-inputs = [
+    pkgs.dbus
+    pkgs.openssl
+    pkgs.freetype
+    pkgs.libsoup
+    pkgs.gtk3
+    pkgs.webkitgtk
+    pkgs.cmake
+  ];
+
+  macos-build-inputs = with pkgs.darwin.apple_sdk.frameworks; [
+    Carbon
+    WebKit
+    AppKit
+  ];
 in
-rustPlatform.buildRustPackage rec {
+pkgs.rustPlatform.buildRustPackage rec {
   inherit version src pname;
 
   sourceRoot = "github-inbox/src-tauri";
 
-  cargoSha256 = "sha256-rv0mqaNqFPmqDFUzTkv5SvRf5PqfCC0Oe5pTAZp8Cjk=";
+  cargoSha256 = "sha256-n9vlvFtuWwySr5rLGqL7qTwgJZQVQV0sGaNAMrnbA0c=";
 
   postPatch = ''
-    echo "Hello world"
-    mkdir -p frontend-build
     cp -R ${frontend-build} frontend-build
     substituteInPlace tauri.conf.json --replace '"distDir": "../dist",' '"distDir": "frontend-build",'
   '';
 
-  buildInputs = [
-    dbus
-    openssl
-    freetype
-    libsoup
-    gtk3
-    webkitgtk
-    cmake
-  ];
+  buildInputs = if pkgs.stdenv.isLinux then linux-build-inputs else macos-build-inputs;
 
   nativeBuildInputs = [
-    pkg-config
+    pkgs.pkg-config
   ];
 
   doCheck = false;
