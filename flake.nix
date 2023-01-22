@@ -51,7 +51,7 @@
             WEBKIT_DISABLE_COMPOSITING_MODE = 1;
             RUST_SRC_PATH = "${pkgs.rustPlatform.rustLibSrc}";
           };
-          packages.github-inbox = import ./default.nix { inherit pkgs system; };
+          packages.github-inbox = import ./default.nix { inherit pkgs; };
           packages.default = self.packages.${system}.github-inbox;
         }
       );

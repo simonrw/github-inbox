@@ -1,6 +1,4 @@
-{ pkgs ? import <nixpkgs> { }
-, system
-}:
+{ pkgs ? import <nixpkgs> { } }:
 let
   pname = "github-inbox";
   version = "unstable";
