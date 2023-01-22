@@ -2,14 +2,15 @@
 let
   pname = "github-inbox";
   version = "unstable";
-  src = ./.;
 
   frontend-build = pkgs.mkYarnPackage {
-    inherit version src;
+    inherit version;
+
+    src = ./.;
     pname = "github-inbox-ui";
 
     offlineCache = pkgs.fetchYarnDeps {
-      yarnLock = src + "/yarn.lock";
+      yarnLock = "${toString ./yarn.lock}";
       hash = "sha256-PAMl4/TReurrvrg/xuBaBM1oqmmXiRCqCI7qtOJS7+8=";
     };
 
@@ -42,9 +43,9 @@ let
   ];
 in
 pkgs.rustPlatform.buildRustPackage rec {
-  inherit version src pname;
+  inherit version pname;
 
-  sourceRoot = "github-inbox/src-tauri";
+  src = ./src-tauri;
 
   cargoSha256 = "sha256-n9vlvFtuWwySr5rLGqL7qTwgJZQVQV0sGaNAMrnbA0c=";
 
