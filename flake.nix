@@ -30,6 +30,7 @@
             pkgs.pkg-config
             pkgs.yarn
             pkgs.nodePackages.prettier
+            pkgs.appimage-run
           ];
           buildInputs = build-inputs;
 
@@ -39,6 +40,40 @@
           RUST_SRC_PATH = "${pkgs.rustPlatform.rustLibSrc}";
         };
         packages.default = pkgs.callPackage ./default.nix { };
+        packages.github-inbox-bin = pkgs.stdenv.mkDerivation rec {
+          pname = "github-inbox-bin";
+          version = "0.0.0";
+
+          src = pkgs.fetchurl {
+            url = "https://github.com/simonrw/github-inbox/releases/download/app-v${version}/github-inbox_${version}_amd64.deb";
+            hash = "sha256-FBYqjLkG+yBCm9wdLc7XpYqnyL27zvsf6ofJO/MwbMQ=";
+          };
+
+          nativeBuildInputs = [
+            pkgs.autoPatchelfHook
+            pkgs.dpkg
+          ];
+
+          buildInputs = [
+            pkgs.glib-networking
+            pkgs.openssl
+            pkgs.webkitgtk
+            pkgs.wrapGAppsHook
+          ];
+
+          desktopItem = makeDesktopItem {
+            categories = [ "Game" "AdventureGame" ];
+            comment = description;
+            desktopName = long;
+            exec = "@out@/bin/${short}";
+            genericName = description;
+            icon = "scummvm";
+            name = name;
+          };
+          unpackCmd = "dpkg-deb -x $curSrc source";
+
+          installPhase = "mv usr $out";
+        };
       }
     );
 }
