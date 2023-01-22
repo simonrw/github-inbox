@@ -7,7 +7,16 @@
     flake-utils.lib.eachDefaultSystem
       (system:
         let
-          pkgs = nixpkgs.legacyPackages.${system};
+          node-overlay = self: super: {
+            nodejs = super.nodejs-16_x;
+          };
+
+          pkgs = import nixpkgs {
+            inherit system;
+            overlays = [
+              node-overlay
+            ];
+          };
 
           linux-build-inputs = [
             pkgs.webkitgtk
@@ -42,50 +51,8 @@
             WEBKIT_DISABLE_COMPOSITING_MODE = 1;
             RUST_SRC_PATH = "${pkgs.rustPlatform.rustLibSrc}";
           };
-          packages.default = pkgs.callPackage ./default.nix { };
+          packages.github-inbox = import ./default.nix { inherit pkgs system; };
+          packages.default = self.packages.${system}.github-inbox;
         }
-      ) // {
-      # System-specific things
-      packages.x86_64-linux.github-inbox-bin =
-        let
-          pkgs = nixpkgs.legacyPackages.x86_64-linux;
-
-          desktopItem = pkgs.makeDesktopItem {
-            categories = [ "Game" "AdventureGame" ];
-            desktopName = "Github Inbox";
-            exec = "github-inbox";
-            name = "github-inbox";
-          };
-
-        in
-        pkgs.stdenv.mkDerivation rec {
-          pname = "github-inbox-bin";
-          version = "0.0.0";
-
-          src = pkgs.fetchurl {
-            url = "https://github.com/simonrw/github-inbox/releases/download/app-v${version}/github-inbox_${version}_amd64.deb";
-            hash = "sha256-FBYqjLkG+yBCm9wdLc7XpYqnyL27zvsf6ofJO/MwbMQ=";
-          };
-
-          nativeBuildInputs = [
-            pkgs.autoPatchelfHook
-            pkgs.dpkg
-          ];
-
-          buildInputs = [
-            pkgs.glib-networking
-            pkgs.openssl
-            pkgs.webkitgtk
-            pkgs.wrapGAppsHook
-          ];
-
-          unpackCmd = "dpkg-deb -x $curSrc source";
-
-          installPhase =
-            if pkgs.stdenv.isLinux then ''
-              mv usr $out;
-            '' else ''
-              '';
-        };
-    };
+      );
 }

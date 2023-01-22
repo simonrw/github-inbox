@@ -1,13 +1,5 @@
-let
-  node-overlay = self: super: {
-    nodejs = super.nodejs-16_x;
-  };
-in
-{ pkgs ? import <nixpkgs> {
-    overlays = [
-      node-overlay
-    ];
-  }
+{ pkgs ? import <nixpkgs> { }
+, system
 }:
 let
   pname = "github-inbox";
