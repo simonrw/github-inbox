@@ -1,6 +1,6 @@
 // TODO: can we unify the queries and just use the search interface?
 use reqwest::{IntoUrl, Response};
-use serde::{Deserialize, Serialize, Deserializer};
+use serde::{Deserialize, Deserializer, Serialize};
 
 use crate::errors::{MyError, Result};
 
@@ -49,7 +49,9 @@ where
         }
 
         let url = "https://api.github.com/user/orgs";
-        let res = self.client.get::<&str, &[&str]>(url, None)
+        let res = self
+            .client
+            .get::<&str, &[&str]>(url, None)
             .await
             .map_err(|_| MyError::HttpError)?;
 
@@ -62,42 +64,88 @@ where
         Ok(orgs.into_iter().map(|o| o.name).collect())
     }
 
-    pub(crate) async fn fetch_assigned_issues(&self, organisation: &str) -> Result<Vec<Issue>> {
-        self.search(format!("is:open is:issue archived:false user:{organisation} assignee:simonrw")).await
+    pub(crate) async fn fetch_assigned_issues(
+        &self,
+        username: &str,
+        organisation: &str,
+    ) -> Result<Vec<Issue>> {
+        self.search(format!(
+            "is:open is:issue archived:false user:{organisation} assignee:{username}"
+        ))
+        .await
     }
 
-    pub(crate) async fn fetch_created_issues(&self, organisation: &str) -> Result<Vec<Issue>> {
-        self.search(format!("is:open is:issue author:simonrw archived:false user:{organisation}")).await
+    pub(crate) async fn fetch_created_issues(
+        &self,
+        username: &str,
+        organisation: &str,
+    ) -> Result<Vec<Issue>> {
+        self.search(format!(
+            "is:open is:issue author:{username} archived:false user:{organisation}"
+        ))
+        .await
     }
 
-    pub(crate) async fn fetch_mentioned_issues(&self, organisation: &str) -> Result<Vec<Issue>> {
-        self.search(format!("is:open is:issue archived:false user:{organisation} mentions:simonrw ")).await
+    pub(crate) async fn fetch_mentioned_issues(
+        &self,
+        username: &str,
+        organisation: &str,
+    ) -> Result<Vec<Issue>> {
+        self.search(format!(
+            "is:open is:issue archived:false user:{organisation} mentions:{username} "
+        ))
+        .await
     }
 
-    pub(crate) async fn fetch_created_prs(&self, organisation: &str) -> Result<Vec<Issue>> {
-        self.search(format!("is:open is:pr author:simonrw archived:false user:{organisation}")).await
+    pub(crate) async fn fetch_created_prs(
+        &self,
+        username: &str,
+        organisation: &str,
+    ) -> Result<Vec<Issue>> {
+        self.search(format!(
+            "is:open is:pr author:{username} archived:false user:{organisation}"
+        ))
+        .await
     }
 
-    pub(crate) async fn fetch_assigned_prs(&self, organisation: &str) -> Result<Vec<Issue>> {
-        self.search(format!("is:open is:pr archived:false user:{organisation} assignee:simonrw")).await
+    pub(crate) async fn fetch_assigned_prs(
+        &self,
+        username: &str,
+        organisation: &str,
+    ) -> Result<Vec<Issue>> {
+        self.search(format!(
+            "is:open is:pr archived:false user:{organisation} assignee:{username}"
+        ))
+        .await
     }
 
-    pub(crate) async fn fetch_mentioned_prs(&self, organisation: &str) -> Result<Vec<Issue>> {
-        self.search(format!("is:open is:pr archived:false user:{organisation} mentions:simonrw")).await
+    pub(crate) async fn fetch_mentioned_prs(
+        &self,
+        username: &str,
+        organisation: &str,
+    ) -> Result<Vec<Issue>> {
+        self.search(format!(
+            "is:open is:pr archived:false user:{organisation} mentions:{username}"
+        ))
+        .await
     }
 
-    pub(crate) async fn fetch_review_requests(&self, organisation: &str) -> Result<Vec<Issue>> {
-        self.search(format!("is:open is:pr review-requested:simonrw archived:false org:{organisation}")).await
+    pub(crate) async fn fetch_review_requests(
+        &self,
+        username: &str,
+        organisation: &str,
+    ) -> Result<Vec<Issue>> {
+        self.search(format!(
+            "is:open is:pr review-requested:{username} archived:false org:{organisation}"
+        ))
+        .await
     }
 
     async fn search(&self, query_args: impl AsRef<str>) -> Result<Vec<Issue>> {
         let url = format!("https://api.github.com/search/issues");
         let res = self
             .client
-            .get(
-                url,
-                Some(&[("q", query_args.as_ref())]),
-            )
+            .get(url, Some(&[("q", query_args.as_ref())]))
             .await
             .map_err(|_| MyError::HttpError)?;
 
@@ -126,7 +174,10 @@ pub(crate) struct Issue {
     pub(crate) html_url: String,
     pub(crate) pull_request: Option<serde_json::Value>,
     pub(crate) draft: Option<bool>,
-    #[serde(rename(deserialize = "repository_url"), deserialize_with = "deserialize_repo")]
+    #[serde(
+        rename(deserialize = "repository_url"),
+        deserialize_with = "deserialize_repo"
+    )]
     pub(crate) repo: Repo,
 }
 
@@ -137,14 +188,17 @@ pub(crate) struct Repo {
 }
 
 fn deserialize_repo<'de, D>(deserializer: D) -> std::result::Result<Repo, D::Error>
-where D: Deserializer<'de> {
+where
+    D: Deserializer<'de>,
+{
     let s: &str = Deserialize::deserialize(deserializer)?;
     let mut parts = s.split('/').rev();
     let name = parts.next().unwrap();
     let owner = parts.next().unwrap();
 
     Ok(Repo {
-        owner: owner.to_string(), name: name.to_string()
+        owner: owner.to_string(),
+        name: name.to_string(),
     })
 }
 

@@ -5,13 +5,14 @@
     import { queryMapping } from "./utils";
 
     export let role: string;
+    export let username: string;
     export let organisation: string;
 
     let data = undefined;
     const queryArgs = queryMapping(role);
 
     onMount(async () => {
-        data = await invoke(queryArgs.query, { organisation });
+        data = await invoke(queryArgs.query, { username, organisation });
     });
 </script>
 

@@ -12,66 +12,71 @@ use crate::errors::Result;
 use crate::github::{GitHub, Issue};
 
 #[tauri::command]
-async fn fetch_orgs(
-    gh: tauri::State<'_, GitHub<reqwest::Client>>,
-) -> Result<Vec<String>> {
+async fn fetch_orgs(gh: tauri::State<'_, GitHub<reqwest::Client>>) -> Result<Vec<String>> {
     gh.fetch_orgs().await
 }
 
 #[tauri::command]
 async fn fetch_assigned_issues(
     gh: tauri::State<'_, GitHub<reqwest::Client>>,
+    username: String,
     organisation: String,
 ) -> Result<Vec<Issue>> {
-    gh.fetch_assigned_issues(&organisation).await
+    gh.fetch_assigned_issues(&username, &organisation).await
 }
 
 #[tauri::command]
 async fn fetch_created_issues(
     gh: tauri::State<'_, GitHub<reqwest::Client>>,
+    username: String,
     organisation: String,
 ) -> Result<Vec<Issue>> {
-    gh.fetch_created_issues(&organisation).await
+    gh.fetch_created_issues(&username, &organisation).await
 }
 
 #[tauri::command]
 async fn fetch_mentioned_issues(
     gh: tauri::State<'_, GitHub<reqwest::Client>>,
+    username: String,
     organisation: String,
 ) -> Result<Vec<Issue>> {
-    gh.fetch_mentioned_issues(&organisation).await
+    gh.fetch_mentioned_issues(&username, &organisation).await
 }
 
 #[tauri::command]
 async fn fetch_created_prs(
     gh: tauri::State<'_, GitHub<reqwest::Client>>,
+    username: String,
     organisation: String,
 ) -> Result<Vec<Issue>> {
-    gh.fetch_created_prs(&organisation).await
+    gh.fetch_created_prs(&username, &organisation).await
 }
 
 #[tauri::command]
 async fn fetch_assigned_prs(
     gh: tauri::State<'_, GitHub<reqwest::Client>>,
+    username: String,
     organisation: String,
 ) -> Result<Vec<Issue>> {
-    gh.fetch_assigned_prs(&organisation).await
+    gh.fetch_assigned_prs(&username, &organisation).await
 }
 
 #[tauri::command]
 async fn fetch_mentioned_prs(
     gh: tauri::State<'_, GitHub<reqwest::Client>>,
+    username: String,
     organisation: String,
 ) -> Result<Vec<Issue>> {
-    gh.fetch_mentioned_prs(&organisation).await
+    gh.fetch_mentioned_prs(&username, &organisation).await
 }
 
 #[tauri::command]
 async fn fetch_review_requests(
     gh: tauri::State<'_, GitHub<reqwest::Client>>,
+    username: String,
     organisation: String,
 ) -> Result<Vec<Issue>> {
-    gh.fetch_review_requests(&organisation).await
+    gh.fetch_review_requests(&username, &organisation).await
 }
 
 fn main() {
