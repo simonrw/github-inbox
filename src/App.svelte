@@ -30,7 +30,7 @@
     }
 </script>
 
-<main>
+<main class="flex">
     {#if ready}
         {#each roles as role}
             <Panel {username} {organisation} {role} />
@@ -67,7 +67,6 @@
 <style>
     main {
         width: 100%;
-        display: flex;
         overflow: scroll;
         padding: 2rem;
         margin-left: auto;
