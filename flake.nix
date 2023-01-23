@@ -40,6 +40,10 @@
               pkgs.pkg-config
               pkgs.yarn
               pkgs.nodePackages.prettier
+              pkgs.cargo
+              pkgs.rustc
+              pkgs.rustfmt
+              pkgs.clippy
             ] ++ pkgs.lib.optionals pkgs.stdenv.isLinux [
               pkgs.appimage-run
             ];
