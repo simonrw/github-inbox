@@ -16,12 +16,12 @@
     });
 </script>
 
-<div>
-    <h2>{queryArgs.title}</h2>
+<div class="min-w-[16rem] flex-initial w-[24rem]">
+    <h2 class="text-white mx-auto text-center text-lg">{queryArgs.title}</h2>
     <ul>
         {#if data}
             {#each data as item}
-                <li>
+                <li class="text-white">
                     <Item raw={item} />
                 </li>
             {/each}
@@ -30,23 +30,3 @@
         {/if}
     </ul>
 </div>
-
-<style>
-    div {
-        min-width: 250px;
-    }
-
-    li {
-        color: #fff;
-    }
-
-    h2 {
-        font-family: "Noto Sans";
-        color: #d4d4d8;
-        margin-left: auto;
-        margin-right: auto;
-        text-align: center;
-        font-size: 1.125rem;
-        line-height: 1.75rem;
-    }
-</style>

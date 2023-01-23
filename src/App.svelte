@@ -30,7 +30,7 @@
     }
 </script>
 
-<main class="flex">
+<main class="flex mx-auto overflow-scroll min-width-800 h-screen">
     {#if ready}
         {#each roles as role}
             <Panel {username} {organisation} {role} />
@@ -71,16 +71,3 @@
         </div>
     {/if}
 </main>
-
-<style>
-    main {
-        width: 100%;
-        overflow: scroll;
-        padding: 2rem;
-        margin-left: auto;
-        margin-right: auto;
-        font-weight: 600;
-        justify-content: space-between;
-        height: 100vh;
-    }
-</style>

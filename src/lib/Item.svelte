@@ -11,14 +11,16 @@
     const logoClass = `inline mr-2 fill-current ${logoColour}`;
 </script>
 
-<div>
+<div
+    class="border-2 border-slate-800 rounded-lg p-4 mx-8 my-4 bg-slate-800 shadow-xl hover:border-slate-700"
+>
     <a
         href={raw.html_url}
         target="_blank"
         rel="noreferrer"
-        class="flex justify-between"
+        class="justify-between"
     >
-        <span class="inline">
+        <div>
             {#if raw.pull_request}
                 <svg
                     class={logoClass}
@@ -53,37 +55,9 @@
                 </svg>
             {/if}
             {raw.title}
-        </span>
-        <span class="text-slate-600">
+        </div>
+        <div class="text-slate-600">
             {raw.repo.owner}/{raw.repo.name}
-        </span>
+        </div>
     </a>
 </div>
-
-<style>
-    div {
-        background-color: #1e293b;
-        padding-left: 1.5rem;
-        padding-right: 1.5rem;
-        padding-top: 2rem;
-        padding-bottom: 2rem;
-        margin: 1rem;
-        border-radius: 0.5rem;
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
-            0 10px 10px -5px rgba(0, 0, 0, 0.04);
-    }
-
-    div:hover {
-        filter: drop-shadow(0 0 1em #334155);
-    }
-
-    a {
-        font-family: "Noto Sans";
-        color: #ffffff;
-        font-weight: 400;
-    }
-
-    a:hover {
-        color: #e2e8f0;
-    }
-</style>
