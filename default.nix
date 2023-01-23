@@ -10,7 +10,7 @@ let
     pname = "github-inbox-ui";
 
     offlineCache = pkgs.fetchYarnDeps {
-      yarnLock = "${toString ./yarn.lock}";
+      yarnLock = ./yarn.lock;
       hash = "sha256-PAMl4/TReurrvrg/xuBaBM1oqmmXiRCqCI7qtOJS7+8=";
     };
 
