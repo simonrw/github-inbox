@@ -24,7 +24,7 @@
     });
 
     function tryMoveOn() {
-        if ((username !== undefined) && (organisation !== undefined)) {
+        if (username !== undefined && organisation !== undefined) {
             ready = true;
         }
     }
@@ -39,12 +39,17 @@
         <!-- organisation chooser -->
         <div>
             <label
-                    for="username"
-                    class="block mb-2 text-sm font-medium text-gray-900 text-white"
-                    >What is your username?
-                    </label>
-            <input class="rounded" placeholder="Username" type="text" bind:value={username}>
-            
+                for="username"
+                class="block mb-2 text-sm font-medium text-gray-900 text-white"
+                >What is your username?
+            </label>
+            <input
+                class="rounded"
+                placeholder="Username"
+                type="text"
+                bind:value={username}
+            />
+
             <label
                 for="organisations"
                 class="block mb-2 text-sm font-medium text-gray-900 text-white"
@@ -59,7 +64,10 @@
                     <option>{org}</option>
                 {/each}
             </select>
-                <button class="text-white px-4 py-2 bg-slate-700 rounded-lg shadow-xl hover:text-gray-200 mt-4" on:click={tryMoveOn}>Proceed</button>
+            <button
+                class="text-white px-4 py-2 bg-slate-700 rounded-lg shadow-xl hover:text-gray-200 mt-4"
+                on:click={tryMoveOn}>Proceed</button
+            >
         </div>
     {/if}
 </main>
