@@ -81,12 +81,16 @@ async fn fetch_review_requests(
 
 fn main() {
     tracing_subscriber::fmt::init();
-    let token = std::env::var("GITHUB_TOKEN").unwrap();
     let mut headers = HeaderMap::new();
-    let mut auth_value = HeaderValue::from_str(&format!("Bearer {token}")).unwrap();
-    auth_value.set_sensitive(true);
-    headers.insert("Authorization", auth_value);
     headers.insert("User-Agent", HeaderValue::from_static("github-inbox/0.1.0"));
+
+    if let Ok(token) = std::env::var("GITHUB_TOKEN") {
+        let mut auth_value = HeaderValue::from_str(&format!("Bearer {token}")).unwrap();
+        auth_value.set_sensitive(true);
+        headers.insert("Authorization", auth_value);
+    } else {
+        tracing::warn!("no token found - viewing only public issues and PRs");
+    }
 
     let client = reqwest::Client::builder()
         .default_headers(headers)
