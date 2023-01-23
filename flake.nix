@@ -53,6 +53,7 @@
           };
           packages.github-inbox = import ./default.nix { inherit pkgs; };
           packages.default = self.packages.${system}.github-inbox;
+          inherit pkgs;
         }
       );
 }
