@@ -44,7 +44,7 @@
                 >What is your username?
             </label>
             <input
-                class="rounded"
+                class="rounded text-black"
                 placeholder="Username"
                 type="text"
                 bind:value={username}
@@ -58,7 +58,7 @@
             <select
                 id="organisations"
                 bind:value={organisation}
-                class="bg-gray-700 border-gray-600 text-white rounded-lg text-sm w-full"
+                class="bg-gray-700 border-gray-600 text-black rounded-lg text-sm w-full"
             >
                 {#each availableOrganisations as org}
                     <option>{org}</option>
