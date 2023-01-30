@@ -165,7 +165,14 @@ where
         };
         Ok(issues)
     }
+
+    pub(crate) async fn fetch_notifications(&self, username: &str) -> Result<Vec<Notification>> {
+        todo!()
+    }
 }
+
+#[derive(Deserialize, Serialize)]
+pub(crate) struct Notification {}
 
 #[derive(Deserialize, Serialize)]
 pub(crate) struct Issue {

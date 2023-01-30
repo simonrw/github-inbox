@@ -6,6 +6,7 @@
 mod errors;
 mod github;
 
+use github::Notification;
 use reqwest::header::{HeaderMap, HeaderValue};
 
 use crate::errors::Result;
@@ -79,6 +80,14 @@ async fn fetch_review_requests(
     gh.fetch_review_requests(&username, &organisation).await
 }
 
+#[tauri::command]
+async fn fetch_notifications(
+    gh: tauri::State<'_, GitHub<reqwest::Client>>,
+    username: String,
+) -> Result<Vec<Notification>> {
+    gh.fetch_notifications(&username).await
+}
+
 fn main() {
     tracing_subscriber::fmt::init();
     let mut headers = HeaderMap::new();
@@ -109,6 +118,7 @@ fn main() {
             fetch_assigned_prs,
             fetch_mentioned_prs,
             fetch_review_requests,
+            fetch_notifications,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
